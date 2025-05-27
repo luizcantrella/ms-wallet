@@ -1,0 +1,17 @@
+{
+  "name":"postgresql-connector",
+  "config": {
+    "connector.class":"io.debezium.connector.postgresql.PostgresConnector",
+    "tasks.max":"1",
+    "topic.prefix":"postgresql",
+    "database.user":"postgres",
+    "database.password":"postgres",
+    "database.dbname":"users",
+    "database.hostname":"postgres",
+    "database.port":"5432",
+    "database.server.name":"postgresql-server",
+    "database.history.kafka.bootstrap.servers":"kafka:9092",
+    "database.history.kafka.topic":"postgresql_history",
+    "table.include.list":"public.transactions"
+  }
+}

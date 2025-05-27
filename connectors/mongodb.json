@@ -1,0 +1,14 @@
+{
+  "name":"mongo-sink-from-postgresql",
+  "config": {
+    "connector.class":"com.mongodb.kafka.connect.MongoSinkConnector",
+    "tasks.max":"1",
+    "topics":"postgresql.public.transactions",
+    "connection.uri":"mongodb://root:root@mongodb/",
+    "database":"transactions_log",
+    "collection":"transactions",
+    "transforms":"extractAddress",
+    "transforms.extractAddress.type":"org.apache.kafka.connect.transforms.ExtractField$Value",
+    "transforms.extractAddress.field":"after"
+  }
+}

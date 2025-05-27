@@ -1,0 +1,104 @@
+{
+  "id": "wallet_realm",
+  "realm": "wallet_realm",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "my-client",
+      "name": "My Client Application",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "my-client-secret",
+      "redirectUris": [
+        "https://oauth.pstmn.io/v1/callback",
+        "http://localhost:8080/callback"
+      ],
+      "publicClient": false,
+      "authorizationServicesEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "attributes": {
+        "post.logout.redirect.uris": "+",
+        "oauth2.device.authorization.grant.enabled": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "client_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "clientId",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "client_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "client_name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "name",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "client_name",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "client_id",
+      "name": "Wallet Grant Client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "client_secret",
+      "redirectUris": [],
+      "publicClient": false,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "attributes": {}
+    }
+  ],
+  "users": [
+    {
+      "username": "james",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "james",
+      "lastName": "hetfield",
+      "email": "james.hetfield@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "123456",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "kirk",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "kirk",
+      "lastName": "hammett",
+      "email": "kirk.hammett@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "258369",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

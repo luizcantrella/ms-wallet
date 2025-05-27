@@ -1,5 +1,11 @@
 version: "3"
 
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   postgres:
     image: debezium/postgres:15
@@ -22,6 +28,7 @@ services:
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+    logging: *default-logging
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -39,6 +46,7 @@ services:
       KAFKA_LISTENERS: INTERNAL://:9092,OUTSIDE://:9094
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://host.docker.internal:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+    logging: *default-logging
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
@@ -55,6 +63,7 @@ services:
       CONTROL_CENTER_REPLICATION_FACTOR: 1
       CONTROL_CENTER_CONNECT_CLUSTER: http://kafka-connect:8083
       PORT: 9021
+    logging: *default-logging
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
@@ -97,6 +106,7 @@ services:
         /etc/confluent/docker/run &
         #
         sleep infinity
+    logging: *default-logging
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
@@ -110,6 +120,7 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=root
       - MONGO_INITDB_DATABASE=transactions_log
+    logging: *default-logging
     extra_hosts:
       - "host.docker.internal:172.17.0.1"
 
@@ -119,5 +130,29 @@ services:
     ports:
       - "6379:6379"
     command: [ "redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru" ]
+    logging: *default-logging
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.5
+    container_name: keycloak
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres/users
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/realm.json
+    ports:
+      - "8084:8080"
+    command: [ "start-dev", "--import-realm" ]
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
+    logging: *default-logging
     extra_hosts:
       - "host.docker.internal:172.17.0.1"

@@ -1,6 +1,6 @@
 package dev.cantrella.ms_wallet.infra.adapter.out.persistence.repository;
 
-import dev.cantrella.ms_wallet.domain.Wallet;
+import dev.cantrella.ms_wallet.domain.model.Wallet;
 import dev.cantrella.ms_wallet.infra.adapter.out.persistence.entity.WalletEntity;
 import dev.cantrella.ms_wallet.infra.adapter.out.persistence.mapper.WalletPersistenceMapper;
 import dev.cantrella.ms_wallet.ports.out.WalletRepositoryPort;

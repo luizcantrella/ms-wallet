@@ -1,6 +1,9 @@
-package dev.cantrella.ms_wallet.domain;
+package dev.cantrella.ms_wallet.domain.model;
 
+import dev.cantrella.ms_wallet.domain.exception.NonNullValueException;
+import dev.cantrella.ms_wallet.domain.exception.WalletOperationException;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -9,8 +12,9 @@ import java.util.UUID;
 
 @Builder
 @Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Wallet {
-
+    @EqualsAndHashCode.Include
     private UUID id;
     private String userId;
     private BigDecimal balance;
@@ -24,6 +28,9 @@ public class Wallet {
     }
 
     public static Wallet create(String userId) {
+        if (userId == null) {
+         throw new NonNullValueException("UserId is required to create a wallet");
+        }
         return new Wallet(
                 UUID.randomUUID(),
                 userId,
@@ -34,19 +41,17 @@ public class Wallet {
 
     public void deposit(BigDecimal amount) {
         if (amount == null || amount.signum() <= 0) {
-            throw new RuntimeException("Negative value is not allowed in this operations");
+            throw new WalletOperationException("Negative value is not allowed in this operations");
         }
         this.balance = this.balance.add(amount);
     }
     public void withdraw(BigDecimal amount) {
         if (amount == null || amount.signum() <= 0) {
-            // not allowed operation, amount invalid
-            throw new RuntimeException("Negative value is not allowed in this operations");
+            throw new WalletOperationException("Negative value is not allowed in this operations");
         }
         BigDecimal result = this.balance.subtract(amount);
         if (result.signum() < 0) {
-            // not allowed operation, wallet balance isn't enough
-            throw new RuntimeException("The wallet balance don't have enough amount to withdraw");
+            throw new WalletOperationException("The wallet balance don't have enough amount to withdraw");
         }
         this.balance = result;
     }

@@ -2,10 +2,11 @@ package dev.cantrella.ms_wallet.application.usecase;
 
 import dev.cantrella.ms_wallet.application.dto.BalanceHistoryQuery;
 import dev.cantrella.ms_wallet.application.dto.BalanceResponse;
+import dev.cantrella.ms_wallet.application.exception.WalletNotFoundException;
 import dev.cantrella.ms_wallet.application.port.ConsultBalanceHistoryUseCase;
-import dev.cantrella.ms_wallet.domain.Transaction;
-import dev.cantrella.ms_wallet.domain.TransactionType;
-import dev.cantrella.ms_wallet.domain.Wallet;
+import dev.cantrella.ms_wallet.domain.model.Transaction;
+import dev.cantrella.ms_wallet.domain.model.TransactionType;
+import dev.cantrella.ms_wallet.domain.model.Wallet;
 import dev.cantrella.ms_wallet.ports.out.CachePort;
 import dev.cantrella.ms_wallet.ports.out.TransactionLogRepositoryPort;
 import dev.cantrella.ms_wallet.ports.out.WalletRepositoryPort;
@@ -34,7 +35,7 @@ public class ConsultBalanceHistoryUseCaseImpl implements ConsultBalanceHistoryUs
             return cachedBalance;
         }
         Wallet wallet = walletRepositoryPort.findByUserId(query.userId())
-                .orElseThrow(() -> new RuntimeException("Wallet don't exists"));
+                .orElseThrow(() -> new WalletNotFoundException(query.userId()));
         List<Transaction> transactions = transactionLogRepositoryPort.listByWalletId(wallet.getId(), query.timestamp());
         BigDecimal balance = transactions.stream()
                 .map(tx -> {

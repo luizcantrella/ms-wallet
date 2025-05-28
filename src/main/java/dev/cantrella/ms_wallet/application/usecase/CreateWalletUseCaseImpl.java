@@ -1,6 +1,7 @@
 package dev.cantrella.ms_wallet.application.usecase;
 
-import dev.cantrella.ms_wallet.domain.Wallet;
+import dev.cantrella.ms_wallet.application.exception.WalletAlreadyExistsException;
+import dev.cantrella.ms_wallet.domain.model.Wallet;
 import dev.cantrella.ms_wallet.application.port.CreateWalletUseCase;
 import dev.cantrella.ms_wallet.ports.out.WalletRepositoryPort;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class CreateWalletUseCaseImpl implements CreateWalletUseCase {
     public UUID execute(String userEmail) {
         Objects.requireNonNull(userEmail, "UserEmail can not be null");
         if( walletRepositoryPort.existsByUserId(userEmail) ) {
-            throw new RuntimeException("Wallet already exists for this user");
+            throw new WalletAlreadyExistsException();
         }
         Wallet wallet = Wallet.create(userEmail);
         wallet = walletRepositoryPort.save(wallet);

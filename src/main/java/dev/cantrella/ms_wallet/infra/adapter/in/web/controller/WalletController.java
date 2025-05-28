@@ -1,8 +1,8 @@
-package dev.cantrella.ms_wallet.infra.adapter.in.web;
+package dev.cantrella.ms_wallet.infra.adapter.in.web.controller;
 
 import dev.cantrella.ms_wallet.application.dto.*;
 import dev.cantrella.ms_wallet.application.port.*;
-import dev.cantrella.ms_wallet.domain.Transaction;
+import dev.cantrella.ms_wallet.domain.model.Transaction;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,6 +24,7 @@ public class WalletController {
     private final TransferUseCase transferUseCase;
     private final ConsultBalanceUseCase consultBalanceUseCase;
     private final ConsultBalanceHistoryUseCase consultBalanceHistoryUseCase;
+    private final ConsultWalletIdUseCase consultWalletIdUseCase;
 
     @PostMapping(path = "wallets")
     ResponseEntity<CreateWalletResponse> createWallet(
@@ -33,6 +34,16 @@ public class WalletController {
         return new ResponseEntity<>(
                 new CreateWalletResponse(walletId.toString()),
                 HttpStatus.CREATED);
+    }
+
+    @GetMapping(path = "wallets")
+    ResponseEntity<CreateWalletResponse> get(
+            @AuthenticationPrincipal Jwt jwt) {
+        String userEmail = jwt.getClaim("email");
+        UUID walletId = consultWalletIdUseCase.execute(userEmail);
+        return new ResponseEntity<>(
+                new CreateWalletResponse(walletId.toString()),
+                HttpStatus.OK);
     }
 
     @PostMapping(path = "wallets/deposit")

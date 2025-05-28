@@ -1,6 +1,6 @@
 package dev.cantrella.ms_wallet.infra.adapter.out.persistence.mapper;
 
-import dev.cantrella.ms_wallet.domain.Wallet;
+import dev.cantrella.ms_wallet.domain.model.Wallet;
 import dev.cantrella.ms_wallet.infra.adapter.out.persistence.entity.WalletEntity;
 import org.springframework.stereotype.Component;
 

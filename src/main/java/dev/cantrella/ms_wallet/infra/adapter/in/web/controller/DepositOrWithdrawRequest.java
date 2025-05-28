@@ -1,4 +1,4 @@
-package dev.cantrella.ms_wallet.infra.adapter.in.web;
+package dev.cantrella.ms_wallet.infra.adapter.in.web.controller;
 
 
 import jakarta.validation.constraints.NotNull;

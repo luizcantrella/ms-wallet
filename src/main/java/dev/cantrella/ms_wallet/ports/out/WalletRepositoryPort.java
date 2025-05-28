@@ -1,6 +1,6 @@
 package dev.cantrella.ms_wallet.ports.out;
 
-import dev.cantrella.ms_wallet.domain.Wallet;
+import dev.cantrella.ms_wallet.domain.model.Wallet;
 
 import java.util.Optional;
 import java.util.UUID;

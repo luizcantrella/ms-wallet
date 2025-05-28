@@ -1,11 +1,13 @@
 package dev.cantrella.ms_wallet.application.dto;
 
-import java.util.Objects;
-import java.util.UUID;
+import dev.cantrella.ms_wallet.application.exception.InvalidDataException;
+
 
 public record ConsultBalanceQuery(String userId) {
 
     public ConsultBalanceQuery {
-        Objects.requireNonNull(userId, "UserId can not be null");
+        if(userId == null || userId.isBlank()) {
+            throw new InvalidDataException("user id can't be null");
+        }
     }
 }

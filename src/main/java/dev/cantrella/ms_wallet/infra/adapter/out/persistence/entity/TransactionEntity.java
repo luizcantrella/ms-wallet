@@ -1,6 +1,6 @@
 package dev.cantrella.ms_wallet.infra.adapter.out.persistence.entity;
 
-import dev.cantrella.ms_wallet.domain.TransactionType;
+import dev.cantrella.ms_wallet.domain.model.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;

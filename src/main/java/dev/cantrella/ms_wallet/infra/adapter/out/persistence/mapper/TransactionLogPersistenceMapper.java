@@ -1,7 +1,7 @@
 package dev.cantrella.ms_wallet.infra.adapter.out.persistence.mapper;
 
-import dev.cantrella.ms_wallet.domain.Transaction;
-import dev.cantrella.ms_wallet.domain.TransactionType;
+import dev.cantrella.ms_wallet.domain.model.Transaction;
+import dev.cantrella.ms_wallet.domain.model.TransactionType;
 import dev.cantrella.ms_wallet.infra.adapter.out.persistence.entity.TransactionMongoEntity;
 import org.springframework.stereotype.Component;
 

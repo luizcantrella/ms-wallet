@@ -19,6 +19,7 @@ services:
       POSTGRES_DB: users
     volumes:
       - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     extra_hosts:
       - "host.docker.internal:172.17.0.1"

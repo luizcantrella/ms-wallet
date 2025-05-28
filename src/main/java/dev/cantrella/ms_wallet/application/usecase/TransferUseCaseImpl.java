@@ -1,9 +1,7 @@
 package dev.cantrella.ms_wallet.application.usecase;
 
-import dev.cantrella.ms_wallet.application.dto.DepositCommand;
 import dev.cantrella.ms_wallet.application.dto.TransferCommand;
 import dev.cantrella.ms_wallet.application.port.TransferUseCase;
-import dev.cantrella.ms_wallet.application.port.WithdrawUseCase;
 import dev.cantrella.ms_wallet.domain.Transaction;
 import dev.cantrella.ms_wallet.domain.Wallet;
 import dev.cantrella.ms_wallet.ports.out.CachePort;
@@ -26,10 +24,10 @@ public class TransferUseCaseImpl implements TransferUseCase {
     @Transactional
     public Transaction execute(TransferCommand command) {
         Wallet sourceWallet = walletRepositoryPort
-                .findById(command.sourceWalletId())
+                .findByIdForUpdate(command.sourceWalletId())
                 .orElseThrow(()-> new RuntimeException("WalletNotFound"));
         Wallet destinationWallet = walletRepositoryPort
-                .findById(command.destinationWalletId())
+                .findByIdForUpdate(command.destinationWalletId())
                 .orElseThrow(()-> new RuntimeException("WalletNotFound"));
         sourceWallet.withdraw(command.amount());
         destinationWallet.deposit(command.amount());
@@ -40,10 +38,10 @@ public class TransferUseCaseImpl implements TransferUseCase {
                 command.amount(),
                 "BLR");
 
-        walletRepositoryPort.save(sourceWallet);
-        walletRepositoryPort.save(destinationWallet);
-        cachePort.evict(sourceWallet.getId().toString());
-        cachePort.evict(destinationWallet.getId().toString());
+        walletRepositoryPort.update(sourceWallet);
+        walletRepositoryPort.update(destinationWallet);
+        cachePort.evict(sourceWallet.getUserId());
+        cachePort.evict(destinationWallet.getUserId());
         return transactionRepositoryPort.save(transaction);
     }
 }

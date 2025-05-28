@@ -1,10 +1,7 @@
 package dev.cantrella.ms_wallet.infra.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,15 +10,14 @@ import java.util.UUID;
 @Entity
 @Table(name = "wallets")
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class WalletEntity {
 
-    @Version
-    private Long version;
-
     @Id
+    @Column(name = "id")
     private UUID id;
     @Column(name = "user_id", nullable = false, unique = true)
     private String userId;

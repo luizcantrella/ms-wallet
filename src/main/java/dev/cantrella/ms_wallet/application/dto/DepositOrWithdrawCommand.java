@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
 
-public record DepositCommand(UUID walletId, BigDecimal amount) {
+public record DepositOrWithdrawCommand(String userId, BigDecimal amount) {
 
-    public DepositCommand {
-        Objects.requireNonNull(walletId, "WalletId can not be null");
+    public DepositOrWithdrawCommand {
+        Objects.requireNonNull(userId, "WalletId can not be null");
         Objects.requireNonNull(amount, "Amount can not be null");
     }
 }

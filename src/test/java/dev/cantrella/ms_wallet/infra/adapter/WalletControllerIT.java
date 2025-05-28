@@ -3,23 +3,28 @@ package dev.cantrella.ms_wallet.infra.adapter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redis.testcontainers.RedisContainer;
 import dev.cantrella.ms_wallet.domain.TransactionType;
-import dev.cantrella.ms_wallet.infra.adapter.in.web.CreateWalletRequest;
-import dev.cantrella.ms_wallet.infra.adapter.in.web.DepositRequest;
+import dev.cantrella.ms_wallet.infra.adapter.in.web.DepositOrWithdrawRequest;
 import dev.cantrella.ms_wallet.infra.adapter.in.web.TransferRequest;
 import dev.cantrella.ms_wallet.infra.adapter.out.persistence.entity.TransactionMongoEntity;
+import dev.cantrella.ms_wallet.infra.adapter.out.persistence.entity.WalletEntity;
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -39,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @Testcontainers
+@Transactional
 class WalletControllerIT {
 
     @Container
@@ -68,74 +74,71 @@ class WalletControllerIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private EntityManager entityManager;
+
+    String bobWalletId;
+
     @BeforeEach
     void setUp() {
         mongoTemplate.dropCollection("transactions");
     }
 
-    @Test
-    void shouldCreateWalletSuccessfully() throws Exception {
-        CreateWalletRequest request = new CreateWalletRequest(UUID.randomUUID().toString());
-
-        mockMvc.perform(post("/wallets")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
-    @Test
-    void shouldDepositSuccessfully() throws Exception {
-        // Primeiro cria a wallet
-        String userId = UUID.randomUUID().toString();
-        CreateWalletRequest createRequest = new CreateWalletRequest(userId);
+    private void setSecurityContext(String email, String name) {
+        SecurityContextHolder.getContext().setAuthentication(
+                new JwtAuthenticationToken(
+                        Jwt.withTokenValue(name)
+                                .header("alg", "RS256")
+                                .claim("email", email)
+                                .build()
+                )
+        );
+    }
+
+    private String createClientWallet(String email, String name) throws Exception {
+        setSecurityContext(email, name);
 
         String walletId = mockMvc.perform(post("/wallets")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+        return objectMapper.readTree(walletId).get("id").asText();
+    }
 
-        String createdWalletId = objectMapper.readTree(walletId).get("id").asText();
+    @Test
+    void shouldCreateWalletSuccessfully() throws Exception {
+        createClientWallet("bob@mail.com", "bob");
+    }
 
-        DepositRequest depositRequest = new DepositRequest(new BigDecimal("100.00"));
-
-        mockMvc.perform(post("/wallets/{walletId}/deposit", createdWalletId)
+    @Test
+    void shouldDepositSuccessfully() throws Exception {
+        createClientWallet("bob@mail.com", "bob");
+        DepositOrWithdrawRequest depositOrWithdrawRequest = new DepositOrWithdrawRequest(new BigDecimal("100.00"));
+        mockMvc.perform(post("/wallets/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(depositRequest)))
+                        .content(objectMapper.writeValueAsString(depositOrWithdrawRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.amount").value(100.00));
     }
 
     @Test
     void shouldWithdrawSuccessfully() throws Exception {
-        // Criar a wallet
-        String userId = UUID.randomUUID().toString();
-        CreateWalletRequest createRequest = new CreateWalletRequest(userId);
-
-        String walletId = mockMvc.perform(post("/wallets")
+        createClientWallet("bob@mail.com", "bob");
+        DepositOrWithdrawRequest depositOrWithdrawRequest = new DepositOrWithdrawRequest(new BigDecimal("200.00"));
+        mockMvc.perform(post("/wallets/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        String createdWalletId = objectMapper.readTree(walletId).get("id").asText();
-
-        // Deposita um valor para poder sacar
-        DepositRequest depositRequest = new DepositRequest(new BigDecimal("200.00"));
-
-        mockMvc.perform(post("/wallets/{walletId}/deposit", createdWalletId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(depositRequest)))
+                        .content(objectMapper.writeValueAsString(depositOrWithdrawRequest)))
                 .andExpect(status().isOk());
 
-        // Agora realiza o saque
-        DepositRequest withdrawRequest = new DepositRequest(new BigDecimal("50.00"));
-
-        mockMvc.perform(post("/wallets/{walletId}/withdraw", createdWalletId)
+        DepositOrWithdrawRequest withdrawRequest = new DepositOrWithdrawRequest(new BigDecimal("50.00"));
+        mockMvc.perform(post("/wallets/withdraw")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(withdrawRequest)))
                 .andExpect(status().isOk())
@@ -144,50 +147,22 @@ class WalletControllerIT {
 
     @Test
     void shouldConsultBalanceSuccessfully() throws Exception {
-        String userId = UUID.randomUUID().toString();
-        CreateWalletRequest createRequest = new CreateWalletRequest(userId);
-
-        String walletId = mockMvc.perform(post("/wallets")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        String createdWalletId = objectMapper.readTree(walletId).get("id").asText();
-
-        // Consulta o saldo
-        mockMvc.perform(get("/wallets/{walletId}/balance", createdWalletId))
+        createClientWallet("bob@mail.com", "bob");
+        mockMvc.perform(get("/wallets/balance"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.balance").exists());
     }
 
     @Test
     void shouldConsultBalanceSuccessfullyAfterADeposit() throws Exception {
-        String userId = UUID.randomUUID().toString();
-        CreateWalletRequest createRequest = new CreateWalletRequest(userId);
-
-        String walletId = mockMvc.perform(post("/wallets")
+        createClientWallet("bob@mail.com", "bob");
+        DepositOrWithdrawRequest depositOrWithdrawRequest = new DepositOrWithdrawRequest(new BigDecimal("200.00"));
+        mockMvc.perform(post("/wallets/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        String createdWalletId = objectMapper.readTree(walletId).get("id").asText();
-
-        // Deposita um valor para poder sacar
-        DepositRequest depositRequest = new DepositRequest(new BigDecimal("200.00"));
-
-        mockMvc.perform(post("/wallets/{walletId}/deposit", createdWalletId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(depositRequest)))
+                        .content(objectMapper.writeValueAsString(depositOrWithdrawRequest)))
                 .andExpect(status().isOk());
 
-        // Consulta o saldo
-        mockMvc.perform(get("/wallets/{walletId}/balance", createdWalletId))
+        mockMvc.perform(get("/wallets/balance"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.balance").exists())
                 .andExpect(jsonPath("$.balance").value(200.00));
@@ -195,69 +170,45 @@ class WalletControllerIT {
 
     @Test
     void shouldTransferSuccessfully() throws Exception {
-        // Cria carteira de origem
-        String userId1 = UUID.randomUUID().toString();
-        String userId2 = UUID.randomUUID().toString();
 
-        String walletId1 = objectMapper.readTree(mockMvc.perform(post("/wallets")
+        WalletEntity wallet = WalletEntity.builder()
+                .id(UUID.randomUUID())
+                .userId("john@mail.com")
+                .balance(BigDecimal.ZERO)
+                .createdAt(LocalDateTime.now())
+                .build();
+        entityManager.merge(wallet);
+        String bobWalletId = createClientWallet("bob@mail.com", "bob");
+        DepositOrWithdrawRequest depositOrWithdrawRequest = new DepositOrWithdrawRequest(new BigDecimal("200.00"));
+        mockMvc.perform(post("/wallets/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new CreateWalletRequest(userId1))))
-                .andReturn().getResponse().getContentAsString()).get("id").asText();
-
-        String walletId2 = objectMapper.readTree(mockMvc.perform(post("/wallets")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new CreateWalletRequest(userId2))))
-                .andReturn().getResponse().getContentAsString()).get("id").asText();
-
-        // Deposita na carteira de origem
-        mockMvc.perform(post("/wallets/{walletId}/deposit", walletId1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new DepositRequest(new BigDecimal("500.00")))))
+                        .content(objectMapper.writeValueAsString(depositOrWithdrawRequest)))
                 .andExpect(status().isOk());
 
-        // Realiza a transferência
-        TransferRequest transferRequest = new TransferRequest(walletId1, walletId2, new BigDecimal("100.00"));
-
+        TransferRequest transferRequest = new TransferRequest(bobWalletId, wallet.getId().toString(), new BigDecimal("100.00"));
         mockMvc.perform(post("/transfers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(transferRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.amount").value(100.00));
-
-        mockMvc.perform(get("/wallets/{walletId}/balance", walletId1))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.balance").exists())
-                .andExpect(jsonPath("$.balance").value(400.00));
-
-        mockMvc.perform(get("/wallets/{walletId}/balance", walletId2))
+        mockMvc.perform(get("/wallets/balance"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.balance").exists())
                 .andExpect(jsonPath("$.balance").value(100.00));
+
     }
 
     @Test
     void shouldGetHistoryWithSuccess() throws Exception {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-        String userId = UUID.randomUUID().toString();
-        CreateWalletRequest createRequest = new CreateWalletRequest(userId);
-
-        String walletId = mockMvc.perform(post("/wallets")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        String createdWalletId = objectMapper.readTree(walletId).get("id").asText();
-
-        var mongoId = UUID.randomUUID().toString().replace("-", "");
-
+        var before = LocalDateTime.now().format(formatter);
+        Thread.sleep(1000);
+        String bobWalletId = createClientWallet("bob@mail.com", "bob");
         mongoTemplate.save(
                 TransactionMongoEntity.builder()
-                .id(mongoId)
+                .id(UUID.randomUUID().toString().replace("-", ""))
                 .transactionId(UUID.randomUUID().toString())
-                .sourceWalletId(createdWalletId)
+                .sourceWalletId(bobWalletId)
                 .destinationWalletId(null)
                 .type(TransactionType.DEPOSIT.toString())
                 .amount(new BigDecimal("200.00"))
@@ -265,15 +216,34 @@ class WalletControllerIT {
                 .timestamp(LocalDateTime.now().atZone(ZoneOffset.UTC).toInstant().getEpochSecond() * 1000)
                 .build());
 
-        mockMvc.perform(get("/wallets/{walletId}/balance/history", createdWalletId)
+
+        var firstTime = LocalDateTime.now().format(formatter);
+        Thread.sleep(1000);
+        mongoTemplate.save(
+                TransactionMongoEntity.builder()
+                        .id(UUID.randomUUID().toString().replace("-", ""))
+                        .transactionId(UUID.randomUUID().toString())
+                        .sourceWalletId(bobWalletId)
+                        .destinationWalletId(null)
+                        .type(TransactionType.DEPOSIT.toString())
+                        .amount(new BigDecimal("200.00"))
+                        .currency("BRL")
+                        .timestamp(LocalDateTime.now().atZone(ZoneOffset.UTC).toInstant().getEpochSecond() * 1000)
+                        .build());
+        var secondTime = LocalDateTime.now().format(formatter);
+        mockMvc.perform(get("/wallets/balance" )
                         .contentType(MediaType.APPLICATION_JSON)
-                        .queryParam("at", "2025-05-26T20:47:59"))
+                        .queryParam("at", before))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.balance").value(0.00));
-
-        mockMvc.perform(get("/wallets/{walletId}/balance/history", createdWalletId)
+        mockMvc.perform(get("/wallets/balance")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .queryParam("at", "2025-05-27T20:47:59"))
+                        .queryParam("at", secondTime))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.balance").value(400.00));
+        mockMvc.perform(get("/wallets/balance")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .queryParam("at", firstTime))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.balance").value(200.00));
     }

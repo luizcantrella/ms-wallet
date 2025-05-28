@@ -9,5 +9,10 @@ public interface WalletRepositoryPort {
 
     boolean existsByUserId(String userId);
     Wallet save(Wallet wallet);
+
+    void update(Wallet wallet);
     Optional<Wallet> findById(UUID id);
+    Optional<Wallet> findByUserId(String userId);
+    Optional<Wallet> findByUserIdForUpdate(String userId);
+    Optional<Wallet> findByIdForUpdate(UUID id);
 }

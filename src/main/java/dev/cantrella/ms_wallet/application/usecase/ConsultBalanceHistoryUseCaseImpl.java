@@ -5,6 +5,7 @@ import dev.cantrella.ms_wallet.application.dto.BalanceResponse;
 import dev.cantrella.ms_wallet.application.port.ConsultBalanceHistoryUseCase;
 import dev.cantrella.ms_wallet.domain.Transaction;
 import dev.cantrella.ms_wallet.domain.TransactionType;
+import dev.cantrella.ms_wallet.domain.Wallet;
 import dev.cantrella.ms_wallet.ports.out.CachePort;
 import dev.cantrella.ms_wallet.ports.out.TransactionLogRepositoryPort;
 import dev.cantrella.ms_wallet.ports.out.WalletRepositoryPort;
@@ -27,24 +28,24 @@ public class ConsultBalanceHistoryUseCaseImpl implements ConsultBalanceHistoryUs
 
     @Override
     public BalanceResponse execute(BalanceHistoryQuery query) {
-        String key = buildCacheKey(query.walletId(), query.timestamp());
+        String key = buildCacheKey(query.userId(), query.timestamp());
         BalanceResponse cachedBalance = cachePort.get(key, BalanceResponse.class);
         if(cachedBalance != null) {
             return cachedBalance;
         }
-        walletRepositoryPort.findById(query.walletId())
+        Wallet wallet = walletRepositoryPort.findByUserId(query.userId())
                 .orElseThrow(() -> new RuntimeException("Wallet don't exists"));
-        List<Transaction> transactions = transactionLogRepositoryPort.listByWalletId(query.walletId(), query.timestamp());
+        List<Transaction> transactions = transactionLogRepositoryPort.listByWalletId(wallet.getId(), query.timestamp());
         BigDecimal balance = transactions.stream()
                 .map(tx -> {
-                    if (isCashIn(tx, query.walletId())) {
+                    if (isCashIn(tx, wallet.getId())) {
                         return tx.getAmount();
                     } else {
                         return tx.getAmount().negate();
                     }
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BalanceResponse balanceResponse = new BalanceResponse(query.walletId(), balance);
+        BalanceResponse balanceResponse = new BalanceResponse(wallet.getId(), balance);
         cachePort.put(key, balanceResponse);
         return balanceResponse;
     }
@@ -59,7 +60,7 @@ public class ConsultBalanceHistoryUseCaseImpl implements ConsultBalanceHistoryUs
         return !walletId.equals(transaction.getSourceWalletId());
     }
 
-    private String buildCacheKey(UUID walletId, LocalDateTime at) {
-        return String.format("wallet:%s:balance:%s", walletId.toString(), at.toString());
+    private String buildCacheKey(String userId, LocalDateTime at) {
+        return String.format("wallet:%s:balance:%s", userId, at.toString());
     }
 }

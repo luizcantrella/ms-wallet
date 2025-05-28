@@ -1,6 +1,6 @@
 package dev.cantrella.ms_wallet.application.usecase;
 
-import dev.cantrella.ms_wallet.application.dto.DepositCommand;
+import dev.cantrella.ms_wallet.application.dto.DepositOrWithdrawCommand;
 import dev.cantrella.ms_wallet.domain.Transaction;
 import dev.cantrella.ms_wallet.domain.TransactionType;
 import dev.cantrella.ms_wallet.domain.Wallet;
@@ -56,72 +56,65 @@ class DepositUseCaseImplTest {
     @Test
     @DisplayName("Should deposit amount successfully when wallet exists")
     void shouldDepositAmountSuccessfully() {
-        // Arrange
-        UUID walletId = UUID.randomUUID();
+        String userEmail = "bob@mail.com";
         BigDecimal amount = new BigDecimal("100.50");
-        DepositCommand command = new DepositCommand(walletId, amount);
-
-        Wallet wallet = new Wallet(walletId, "user_123", BigDecimal.ZERO, LocalDateTime.now());
-        when(walletRepositoryPort.findById(walletId)).thenReturn(Optional.of(wallet));
+        DepositOrWithdrawCommand command = new DepositOrWithdrawCommand(userEmail, amount);
+        Wallet wallet = new Wallet(UUID.randomUUID(), userEmail, BigDecimal.ZERO, LocalDateTime.now());
+        when(walletRepositoryPort.findByUserIdForUpdate(userEmail)).thenReturn(Optional.of(wallet));
         when(transactionRepositoryPort.save(any())).thenReturn(transaction);
-        Transaction expectedTransaction = Transaction.createDeposit(walletId, amount, "BLR");
+        Transaction expectedTransaction = Transaction.createDeposit(wallet.getId(), amount, "BLR");
 
-        // Act
         Transaction result = depositUseCase.execute(command);
 
-        // Assert
         assertNotNull(result);
         assertEquals(amount, wallet.getBalance());
-        verify(walletRepositoryPort).findById(walletId);
-        verify(walletRepositoryPort).save(wallet);
+        verify(walletRepositoryPort).findByUserIdForUpdate(userEmail);
+        verify(walletRepositoryPort).update(wallet);
         verify(transactionRepositoryPort).save(any(Transaction.class));
     }
 
     @Test
     @DisplayName("Should throw exception when wallet not found")
     void shouldThrowExceptionWhenWalletNotFound() {
-        // Arrange
-        UUID walletId = UUID.randomUUID();
+        String userEmail = "bob@mail.com";
         BigDecimal amount = new BigDecimal("50.00");
-        DepositCommand command = new DepositCommand(walletId, amount);
+        DepositOrWithdrawCommand command = new DepositOrWithdrawCommand(userEmail, amount);
 
-        when(walletRepositoryPort.findById(walletId)).thenReturn(Optional.empty());
+        when(walletRepositoryPort.findByUserIdForUpdate(userEmail)).thenReturn(Optional.empty());
 
-        // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> depositUseCase.execute(command));
 
         assertEquals("WalletNotFound", exception.getMessage());
-        verify(walletRepositoryPort).findById(walletId);
-        verify(walletRepositoryPort, never()).save(any());
+        verify(walletRepositoryPort).findByUserIdForUpdate(userEmail);
+        verify(walletRepositoryPort, never()).update(any());
         verify(transactionRepositoryPort, never()).save(any());
     }
 
     @Test
     @DisplayName("Should throw exception when amount is null")
     void shouldThrowExceptionWhenAmountIsNull() {
-        // Arrange
-        UUID walletId = UUID.randomUUID();
 
-        // Act & Assert
+        String userEmail = "bob@mail.com";
+
         assertThrows(NullPointerException.class,
-                () -> depositUseCase.execute(new DepositCommand(walletId, null)));
+                () -> depositUseCase.execute(new DepositOrWithdrawCommand(userEmail, null)));
 
-        verify(walletRepositoryPort, never()).findById(any());
-        verify(walletRepositoryPort, never()).save(any());
+        verify(walletRepositoryPort, never()).findByUserIdForUpdate(any());
+        verify(walletRepositoryPort, never()).update(any());
         verify(transactionRepositoryPort, never()).save(any());
     }
 
     @Test
     @DisplayName("Should throw exception when amount is zero or negative")
     void shouldThrowExceptionWhenAmountIsInvalid() {
-        // Arrange
-        UUID walletId = UUID.randomUUID();
-        DepositCommand zeroAmountCommand = new DepositCommand(walletId, BigDecimal.ZERO);
-        DepositCommand negativeAmountCommand = new DepositCommand(walletId, new BigDecimal("-10.00"));
 
-        Wallet wallet = new Wallet(walletId, "user_123", BigDecimal.ZERO, LocalDateTime.now());
-        when(walletRepositoryPort.findById(walletId)).thenReturn(Optional.of(wallet));
+        String userEmail = "bob@mail.com";
+        DepositOrWithdrawCommand zeroAmountCommand = new DepositOrWithdrawCommand(userEmail, BigDecimal.ZERO);
+        DepositOrWithdrawCommand negativeAmountCommand = new DepositOrWithdrawCommand(userEmail, new BigDecimal("-10.00"));
+
+        Wallet wallet = new Wallet(UUID.randomUUID(), userEmail, BigDecimal.ZERO, LocalDateTime.now());
+        when(walletRepositoryPort.findByUserIdForUpdate(userEmail)).thenReturn(Optional.of(wallet));
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> depositUseCase.execute(zeroAmountCommand));
@@ -131,21 +124,20 @@ class DepositUseCaseImplTest {
     @Test
     @DisplayName("Should create transaction with correct values")
     void shouldCreateTransactionWithCorrectValues() {
-        // Arrange
-        UUID walletId = UUID.randomUUID();
-        BigDecimal amount = new BigDecimal("75.25");
-        DepositCommand command = new DepositCommand(walletId, amount);
 
-        Wallet wallet = new Wallet(walletId, "user_123", BigDecimal.ZERO, LocalDateTime.now());
-        Transaction depositTransaction = Transaction.createDeposit(walletId, amount, "BRL");
-        when(walletRepositoryPort.findById(walletId)).thenReturn(Optional.of(wallet));
+        String userEmail = "bob@mail.com";
+        BigDecimal amount = new BigDecimal("75.25");
+        DepositOrWithdrawCommand command = new DepositOrWithdrawCommand(userEmail, amount);
+        Wallet wallet = new Wallet(UUID.randomUUID(), userEmail, BigDecimal.ZERO, LocalDateTime.now());
+        Transaction depositTransaction = Transaction.createDeposit(wallet.getId(), amount, "BRL");
+        when(walletRepositoryPort.findByUserIdForUpdate(userEmail)).thenReturn(Optional.of(wallet));
         when(transactionRepositoryPort.save(any())).thenReturn(depositTransaction);
-        // Act
+
         Transaction result = depositUseCase.execute(command);
 
-        // Assert
+
         assertNotNull(result);
-        assertEquals(walletId, result.getSourceWalletId());
+        assertEquals(wallet.getId(), result.getSourceWalletId());
         assertEquals(amount, result.getAmount());
         assertEquals("BRL", result.getCurrency());
         assertEquals(TransactionType.DEPOSIT, result.getType());
@@ -155,41 +147,36 @@ class DepositUseCaseImplTest {
     @Test
     @DisplayName("Should update wallet balance correctly")
     void shouldUpdateWalletBalanceCorrectly() {
-        // Arrange
-        UUID walletId = UUID.randomUUID();
+
+        String userEmail = "bob@mail.com";
         BigDecimal initialBalance = new BigDecimal("50.00");
         BigDecimal depositAmount = new BigDecimal("30.50");
-        DepositCommand command = new DepositCommand(walletId, depositAmount);
+        DepositOrWithdrawCommand command = new DepositOrWithdrawCommand(userEmail, depositAmount);
+        Wallet wallet = new Wallet(UUID.randomUUID(), userEmail, initialBalance, LocalDateTime.now());
+        when(walletRepositoryPort.findByUserIdForUpdate(userEmail)).thenReturn(Optional.of(wallet));
 
-        Wallet wallet = new Wallet(walletId, "user_123", initialBalance, LocalDateTime.now());
-        when(walletRepositoryPort.findById(walletId)).thenReturn(Optional.of(wallet));
-
-        // Act
         depositUseCase.execute(command);
 
-        // Assert
         assertEquals(initialBalance.add(depositAmount), wallet.getBalance());
     }
 
     @Test
     @DisplayName("Should return the created transaction")
     void shouldReturnCreatedTransaction() {
-        // Arrange
-        UUID walletId = UUID.randomUUID();
+
+        String userEmail = "bob@mail.com";
         BigDecimal amount = new BigDecimal("100.00");
 
-        DepositCommand command = new DepositCommand(walletId, amount);
+        DepositOrWithdrawCommand command = new DepositOrWithdrawCommand(userEmail, amount);
 
-        Wallet wallet = new Wallet(walletId, "user_123", BigDecimal.ZERO, LocalDateTime.now());
-        when(walletRepositoryPort.findById(walletId)).thenReturn(Optional.of(wallet));
+        Wallet wallet = new Wallet(UUID.randomUUID(), userEmail, BigDecimal.ZERO, LocalDateTime.now());
+        when(walletRepositoryPort.findByUserIdForUpdate(userEmail)).thenReturn(Optional.of(wallet));
 
-        Transaction expectedTransaction = Transaction.createDeposit(walletId, amount, "BLR");
+        Transaction expectedTransaction = Transaction.createDeposit(wallet.getId(), amount, "BLR");
         when(transactionRepositoryPort.save(any())).thenReturn(expectedTransaction);
 
-        // Act
         Transaction result = depositUseCase.execute(command);
 
-        // Assert
         assertSame(expectedTransaction, result);
     }
 }

@@ -1,6 +1,6 @@
 package dev.cantrella.ms_wallet.application.usecase;
 
-import dev.cantrella.ms_wallet.application.dto.DepositCommand;
+import dev.cantrella.ms_wallet.application.dto.DepositOrWithdrawCommand;
 import dev.cantrella.ms_wallet.application.port.DepositUseCase;
 import dev.cantrella.ms_wallet.domain.Transaction;
 import dev.cantrella.ms_wallet.domain.Wallet;
@@ -21,16 +21,16 @@ public class DepositUseCaseImpl implements DepositUseCase {
 
     @Override
     @Transactional
-    public Transaction execute(DepositCommand command) {
+    public Transaction execute(DepositOrWithdrawCommand command) {
         Wallet wallet = walletRepositoryPort
-                .findById(command.walletId())
+                .findByUserIdForUpdate(command.userId())
                 .orElseThrow(()-> new RuntimeException("WalletNotFound"));
         wallet.deposit(command.amount());
 
-        Transaction transaction = Transaction.createDeposit(command.walletId(),command.amount(), "BLR");
+        Transaction transaction = Transaction.createDeposit(wallet.getId(),command.amount(), "BLR");
 
-        walletRepositoryPort.save(wallet);
-        cachePort.evict(wallet.getId().toString());
+        walletRepositoryPort.update(wallet);
+        cachePort.evict(command.userId());
         return transactionRepositoryPort.save(transaction);
     }
 }

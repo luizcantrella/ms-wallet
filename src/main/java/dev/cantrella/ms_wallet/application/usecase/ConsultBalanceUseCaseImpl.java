@@ -18,15 +18,15 @@ public class ConsultBalanceUseCaseImpl implements ConsultBalanceUseCase {
 
     @Override
     public BalanceResponse execute(ConsultBalanceQuery command) {
-        BalanceResponse cachedBalance = cachePort.get(command.walletId().toString(), BalanceResponse.class);
+        BalanceResponse cachedBalance = cachePort.get(command.userId(), BalanceResponse.class);
         if(cachedBalance != null) {
             return cachedBalance;
         }
         Wallet wallet = walletRepositoryPort
-                .findById(command.walletId())
+                .findByUserId(command.userId())
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
         var balanceResponse = new BalanceResponse(wallet.getId(), wallet.getBalance());
-        cachePort.put(balanceResponse.walletId().toString(), balanceResponse);
+        cachePort.put(command.userId(), balanceResponse);
         return balanceResponse;
     }
 }

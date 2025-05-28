@@ -114,7 +114,8 @@ transforms.extractAddress.type=org.apache.kafka.connect.transforms.ExtractField$
 transforms.extractAddress.field=after
 
 
-curl -X POST  -H  "Content-Type:application/json" http://localhost:8083/connectors -d @mysql.json
+curl -X POST  -H  "Content-Type:application/json" http://localhost:8083/connectors -d @connectors/postgres.json
+curl -X POST  -H  "Content-Type:application/json" http://localhost:8083/connectors -d @connectors/mongodb.json
 
 curl -X GET http://localhost:8083/connectors
 

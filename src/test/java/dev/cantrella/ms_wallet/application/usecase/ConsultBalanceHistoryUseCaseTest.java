@@ -37,6 +37,8 @@ class ConsultBalanceHistoryUseCaseTest {
     private ConsultBalanceHistoryUseCaseImpl consultBalanceHistoryUseCase;
     private Wallet wallet;
 
+    private final static String USER_ID = "bob@mail.com";
+
     @BeforeEach
     void setUp() {
         wallet = Wallet.create("user_id");
@@ -46,9 +48,9 @@ class ConsultBalanceHistoryUseCaseTest {
     void shouldReturnBalanceWithDepositAndWithdraw() {
         // Arrange
         BalanceHistoryQuery query = new BalanceHistoryQuery(
-                wallet.getId(), LocalDateTime.now());
+                USER_ID, LocalDateTime.now());
 
-        when(walletRepositoryPort.findById(wallet.getId())).thenReturn(Optional.of(wallet));
+        when(walletRepositoryPort.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
 
         List<Transaction> transactions = Arrays.asList(
                 Transaction.createDeposit(wallet.getId(), new BigDecimal("100.00"), "BRL"),
@@ -70,9 +72,9 @@ class ConsultBalanceHistoryUseCaseTest {
     @Test
     void shouldReturnBalanceWithTransferAsCashOut() {
         // Arrange
-        BalanceHistoryQuery query = new BalanceHistoryQuery(wallet.getId(), LocalDateTime.now());
+        BalanceHistoryQuery query = new BalanceHistoryQuery(USER_ID, LocalDateTime.now());
 
-        when(walletRepositoryPort.findById(wallet.getId())).thenReturn(Optional.of(wallet));
+        when(walletRepositoryPort.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
 
         List<Transaction> transactions = Arrays.asList(
                 Transaction.createDeposit(wallet.getId(), new BigDecimal("100.00"), "BRL"),
@@ -95,34 +97,26 @@ class ConsultBalanceHistoryUseCaseTest {
 
     @Test
     void shouldReturnBalanceWithTransferAsCashIn() {
-        // Arrange
-        BalanceHistoryQuery query = new BalanceHistoryQuery(wallet.getId(), LocalDateTime.now());
 
-        when(walletRepositoryPort.findById(wallet.getId())).thenReturn(Optional.of(wallet));
-
+        BalanceHistoryQuery query = new BalanceHistoryQuery(USER_ID, LocalDateTime.now());
+        when(walletRepositoryPort.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
         List<Transaction> transactions = Arrays.asList(
                 Transaction.createTransfer(UUID.randomUUID(), wallet.getId(), new BigDecimal("40.00"), "BRL")
         );
-
-        // Note: walletId é o destino => cash-in
         when(transactionLogRepositoryPort.listByWalletId(eq(wallet.getId()), any()))
                 .thenReturn(transactions);
 
-        // Act
         BalanceResponse response = consultBalanceHistoryUseCase.execute(query);
 
-        // Assert
         assertEquals(new BigDecimal("40.00"), response.balance());
     }
 
     @Test
     void shouldThrowExceptionWhenWalletDoesNotExist() {
-        // Arrange
-        BalanceHistoryQuery query = new BalanceHistoryQuery(wallet.getId(), LocalDateTime.now());
 
-        when(walletRepositoryPort.findById(wallet.getId())).thenReturn(Optional.empty());
+        BalanceHistoryQuery query = new BalanceHistoryQuery(USER_ID, LocalDateTime.now());
+        when(walletRepositoryPort.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
-        // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> consultBalanceHistoryUseCase.execute(query));
         assertEquals("Wallet don't exists", exception.getMessage());
@@ -130,18 +124,14 @@ class ConsultBalanceHistoryUseCaseTest {
 
     @Test
     void shouldReturnZeroWhenNoTransactions() {
-        // Arrange
-        BalanceHistoryQuery query = new BalanceHistoryQuery(wallet.getId(), LocalDateTime.now());
 
-        when(walletRepositoryPort.findById(wallet.getId())).thenReturn(Optional.of(wallet));
-
+        BalanceHistoryQuery query = new BalanceHistoryQuery(USER_ID, LocalDateTime.now());
+        when(walletRepositoryPort.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
         when(transactionLogRepositoryPort.listByWalletId(eq(wallet.getId()), any()))
                 .thenReturn(List.of());
 
-        // Act
         BalanceResponse response = consultBalanceHistoryUseCase.execute(query);
 
-        // Assert
         assertEquals(BigDecimal.ZERO, response.balance());
     }
 }

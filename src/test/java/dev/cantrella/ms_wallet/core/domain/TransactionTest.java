@@ -1,7 +1,9 @@
 package dev.cantrella.ms_wallet.core.domain;
 
-import dev.cantrella.ms_wallet.domain.Transaction;
-import dev.cantrella.ms_wallet.domain.TransactionType;
+import dev.cantrella.ms_wallet.domain.exception.InvalidAmountTransactionException;
+import dev.cantrella.ms_wallet.domain.exception.NonNullValueException;
+import dev.cantrella.ms_wallet.domain.model.Transaction;
+import dev.cantrella.ms_wallet.domain.model.TransactionType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +25,6 @@ class TransactionTest {
     private UUID sourceWalletId;
     private UUID destinationWalletId;
     private BigDecimal validAmount;
-    private String validCurrency;
 
     @BeforeEach
     void setUp() {
@@ -82,20 +83,17 @@ class TransactionTest {
     @NullSource
     @DisplayName("createTransfer should throw when source or destination is null")
     void createTransfer_shouldThrowWhenParamsAreNull(UUID nullId) {
-        // Test null source
-        assertThrows(NullPointerException.class, () ->
+        assertThrows(NonNullValueException.class, () ->
                         Transaction.createTransfer(null, destinationWalletId, validAmount),
                 "Source wallet cannot be null");
-
-        // Test null destination
-        assertThrows(NullPointerException.class, () ->
+        assertThrows(NonNullValueException.class, () ->
                 Transaction.createTransfer(sourceWalletId, null, validAmount));
     }
 
     @Test
     @DisplayName("createDeposit should throw when source is null")
     void createDeposit_shouldThrowWhenSourceIsNull() {
-        assertThrows(NullPointerException.class, () ->
+        assertThrows(NonNullValueException.class, () ->
                         Transaction.createDeposit(null, validAmount),
                 "Source wallet cannot be null");
     }
@@ -103,7 +101,7 @@ class TransactionTest {
     @Test
     @DisplayName("createWithdraw should throw when source is null")
     void createWithdraw_shouldThrowWhenSourceIsNull() {
-        assertThrows(NullPointerException.class, () ->
+        assertThrows(NonNullValueException.class, () ->
                         Transaction.createWithdraw(null, validAmount),
                 "Source wallet cannot be null");
     }
@@ -114,7 +112,7 @@ class TransactionTest {
     void shouldRejectZeroOrNegativeAmounts(String invalidAmount) {
         BigDecimal amount = new BigDecimal(invalidAmount);
 
-        assertThrows(RuntimeException.class, () ->
+        assertThrows(InvalidAmountTransactionException.class, () ->
                         Transaction.createDeposit(sourceWalletId, amount),
                 "Amount must be positive");
     }
@@ -125,7 +123,7 @@ class TransactionTest {
     void shouldRejectAmountsWithManyDecimals(String invalidAmount) {
         BigDecimal amount = new BigDecimal(invalidAmount);
 
-        assertThrows(RuntimeException.class, () ->
+        assertThrows(InvalidAmountTransactionException.class, () ->
                         Transaction.createDeposit(sourceWalletId, amount),
                 "Amount cannot have more than 2 decimal places");
     }

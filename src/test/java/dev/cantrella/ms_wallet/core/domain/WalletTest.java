@@ -1,6 +1,8 @@
 package dev.cantrella.ms_wallet.core.domain;
 
-import dev.cantrella.ms_wallet.domain.Wallet;
+import dev.cantrella.ms_wallet.domain.exception.NonNullValueException;
+import dev.cantrella.ms_wallet.domain.exception.WalletOperationException;
+import dev.cantrella.ms_wallet.domain.model.Wallet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,7 +59,7 @@ class WalletTest {
     void deposit_shouldThrowException_whenAmountZeroOrNegative(String amount) {
         BigDecimal invalidAmount = new BigDecimal(amount);
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        WalletOperationException exception = assertThrows(WalletOperationException.class,
                 () -> wallet.deposit(invalidAmount));
 
         assertEquals("Negative value is not allowed in this operations", exception.getMessage());
@@ -65,8 +67,15 @@ class WalletTest {
 
     @Test
     @DisplayName("deposit should throw exception when amount is null")
+    void create_shouldThrowException_whenUserIdIsNull() {
+        assertThrows(NonNullValueException.class,
+                () -> Wallet.create(null),
+                "UserId is required to create a wallet");
+    }
+    @Test
+    @DisplayName("deposit should throw exception when amount is null")
     void deposit_shouldThrowException_whenAmountIsNull() {
-        assertThrows(RuntimeException.class,
+        assertThrows(WalletOperationException.class,
                 () -> wallet.deposit(null),
                 "Negative value is not allowed in this operations");
     }
@@ -97,7 +106,7 @@ class WalletTest {
     void withdraw_shouldThrowException_whenAmountZeroOrNegative(String amount) {
         BigDecimal invalidAmount = new BigDecimal(amount);
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        WalletOperationException exception = assertThrows(WalletOperationException.class,
                 () -> wallet.withdraw(invalidAmount));
 
         assertEquals("Negative value is not allowed in this operations", exception.getMessage());
@@ -106,7 +115,7 @@ class WalletTest {
     @Test
     @DisplayName("withdraw should throw exception when amount is null")
     void withdraw_shouldThrowException_whenAmountIsNull() {
-        assertThrows(RuntimeException.class,
+        assertThrows(WalletOperationException.class,
                 () -> wallet.withdraw(null),
                 "Negative value is not allowed in this operations");
     }
@@ -114,26 +123,9 @@ class WalletTest {
     @Test
     @DisplayName("withdraw should throw exception when wallet don't have enough balance")
     void withdraw_shouldThrowException_whenBalanceIsNotEnough() {
-        assertThrows(RuntimeException.class,
+        assertThrows(WalletOperationException.class,
                 () -> wallet.withdraw(new BigDecimal("200")),
                 "The wallet balance don't have enough amount to withdraw");
     }
 
-//    @Test
-//    @DisplayName("should handle very large amounts correctly")
-//    void shouldHandleVeryLargeAmounts() {
-//        BigDecimal largeAmount = new BigDecimal("99999999999999999999.99");
-//        wallet.deposit(largeAmount);
-//
-//        assertEquals(new BigDecimal("100000000000000000099.99"), wallet.getBalance());
-//    }
-//
-//    @Test
-//    @DisplayName("should handle very small positive amounts correctly")
-//    void shouldHandleVerySmallAmounts() {
-//        BigDecimal smallAmount = new BigDecimal("0.00000001");
-//        wallet.deposit(smallAmount);
-//
-//        assertEquals(new BigDecimal("100.00000001"), wallet.getBalance());
-//    }
 }

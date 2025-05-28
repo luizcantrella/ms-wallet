@@ -2,8 +2,8 @@ package dev.cantrella.ms_wallet.application.usecase;
 
 import dev.cantrella.ms_wallet.application.dto.BalanceHistoryQuery;
 import dev.cantrella.ms_wallet.application.dto.BalanceResponse;
-import dev.cantrella.ms_wallet.domain.Transaction;
-import dev.cantrella.ms_wallet.domain.Wallet;
+import dev.cantrella.ms_wallet.domain.model.Transaction;
+import dev.cantrella.ms_wallet.domain.model.Wallet;
 import dev.cantrella.ms_wallet.ports.out.CachePort;
 import dev.cantrella.ms_wallet.ports.out.TransactionLogRepositoryPort;
 import dev.cantrella.ms_wallet.ports.out.WalletRepositoryPort;
@@ -118,7 +118,7 @@ class ConsultBalanceHistoryUseCaseTest {
 
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> consultBalanceHistoryUseCase.execute(query));
-        assertEquals("Wallet don't exists", exception.getMessage());
+        assertEquals("Wallet for user ID " + USER_ID + " not found", exception.getMessage());
     }
 
     @Test

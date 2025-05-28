@@ -2,9 +2,9 @@ package dev.cantrella.ms_wallet.infra.adapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redis.testcontainers.RedisContainer;
-import dev.cantrella.ms_wallet.domain.TransactionType;
-import dev.cantrella.ms_wallet.infra.adapter.in.web.DepositOrWithdrawRequest;
-import dev.cantrella.ms_wallet.infra.adapter.in.web.TransferRequest;
+import dev.cantrella.ms_wallet.domain.model.TransactionType;
+import dev.cantrella.ms_wallet.infra.adapter.in.web.controller.DepositOrWithdrawRequest;
+import dev.cantrella.ms_wallet.infra.adapter.in.web.controller.TransferRequest;
 import dev.cantrella.ms_wallet.infra.adapter.out.persistence.entity.TransactionMongoEntity;
 import dev.cantrella.ms_wallet.infra.adapter.out.persistence.entity.WalletEntity;
 import jakarta.persistence.EntityManager;

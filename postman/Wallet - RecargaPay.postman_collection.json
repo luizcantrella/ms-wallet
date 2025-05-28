@@ -602,7 +602,97 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/wallets/balance?at=2025-05-28T00:00:59",
+					"raw": "http://localhost:8080/wallets/balance",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"wallets",
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consult Balance - History",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{user_name1}}",
+							"type": "string"
+						},
+						{
+							"key": "tokenName",
+							"value": "wallet_token",
+							"type": "string"
+						},
+						{
+							"key": "clientSecret",
+							"value": "{{client_secret}}",
+							"type": "string"
+						},
+						{
+							"key": "clientId",
+							"value": "{{client_id}}",
+							"type": "string"
+						},
+						{
+							"key": "grant_type",
+							"value": "password_credentials",
+							"type": "string"
+						},
+						{
+							"key": "accessTokenUrl",
+							"value": "http://localhost:8084/realms/wallet_realm/protocol/openid-connect/token",
+							"type": "string"
+						},
+						{
+							"key": "authUrl",
+							"value": "http://localhost:8084/realms/wallet_realm/protocol/openid-connect/auth",
+							"type": "string"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "https://oauth.pstmn.io/v1/callback",
+							"type": "string"
+						},
+						{
+							"key": "useBrowser",
+							"value": false,
+							"type": "boolean"
+						},
+						{
+							"key": "scope",
+							"value": "openid",
+							"type": "string"
+						},
+						{
+							"key": "client_authentication",
+							"value": "header",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/wallets/balance?at=2025-05-28T11:54:57",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -615,7 +705,7 @@
 					"query": [
 						{
 							"key": "at",
-							"value": "2025-05-28T00:00:59"
+							"value": "2025-05-28T11:54:57"
 						}
 					]
 				}
@@ -698,7 +788,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/wallets/balance",
+					"raw": "http://localhost:8080/wallets/balance?at=2025-05-28T08:38:59",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -707,6 +797,12 @@
 					"path": [
 						"wallets",
 						"balance"
+					],
+					"query": [
+						{
+							"key": "at",
+							"value": "2025-05-28T08:38:59"
+						}
 					]
 				}
 			},

@@ -1,5 +1,6 @@
 package dev.cantrella.ms_wallet.infra.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -12,6 +13,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @Profile("!test")
 public class SecurityConfig {
 
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String RESOURCE_SERVER_URL;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -27,6 +30,6 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder
-                .withJwkSetUri("http://localhost:8084/realms/wallet_realm/protocol/openid-connect/certs").build();
+                .withJwkSetUri(RESOURCE_SERVER_URL+"/protocol/openid-connect/certs").build();
     }
 }

@@ -30,7 +30,6 @@ class TransactionTest {
         sourceWalletId = UUID.randomUUID();
         destinationWalletId = UUID.randomUUID();
         validAmount = new BigDecimal("100.50");
-        validCurrency = "USD";
     }
 
     @Test
@@ -39,15 +38,13 @@ class TransactionTest {
         Transaction transaction = Transaction.createTransfer(
                 sourceWalletId,
                 destinationWalletId,
-                validAmount,
-                validCurrency);
+                validAmount);
 
         assertNotNull(transaction.getId());
         assertEquals(sourceWalletId, transaction.getSourceWalletId());
         assertEquals(destinationWalletId, transaction.getDestinationWalletId());
         assertEquals(TransactionType.TRANSFER, transaction.getType());
         assertEquals(validAmount, transaction.getAmount());
-        assertEquals(validCurrency, transaction.getCurrency());
         assertNotNull(transaction.getTimestamp());
     }
 
@@ -56,15 +53,13 @@ class TransactionTest {
     void createDeposit_shouldCreateValidTransaction() {
         Transaction transaction = Transaction.createDeposit(
                 sourceWalletId,
-                validAmount,
-                validCurrency);
+                validAmount);
 
         assertNotNull(transaction.getId());
         assertEquals(sourceWalletId, transaction.getSourceWalletId());
         assertNull(transaction.getDestinationWalletId());
         assertEquals(TransactionType.DEPOSIT, transaction.getType());
         assertEquals(validAmount, transaction.getAmount());
-        assertEquals(validCurrency, transaction.getCurrency());
         assertNotNull(transaction.getTimestamp());
     }
 
@@ -73,15 +68,13 @@ class TransactionTest {
     void createWithdraw_shouldCreateValidTransaction() {
         Transaction transaction = Transaction.createWithdraw(
                 sourceWalletId,
-                validAmount,
-                validCurrency);
+                validAmount);
 
         assertNotNull(transaction.getId());
         assertEquals(sourceWalletId, transaction.getSourceWalletId());
         assertNull(transaction.getDestinationWalletId());
         assertEquals(TransactionType.WITHDRAW, transaction.getType());
         assertEquals(validAmount, transaction.getAmount());
-        assertEquals(validCurrency, transaction.getCurrency());
         assertNotNull(transaction.getTimestamp());
     }
 
@@ -91,19 +84,19 @@ class TransactionTest {
     void createTransfer_shouldThrowWhenParamsAreNull(UUID nullId) {
         // Test null source
         assertThrows(NullPointerException.class, () ->
-                        Transaction.createTransfer(null, destinationWalletId, validAmount, validCurrency),
+                        Transaction.createTransfer(null, destinationWalletId, validAmount),
                 "Source wallet cannot be null");
 
         // Test null destination
         assertThrows(NullPointerException.class, () ->
-                Transaction.createTransfer(sourceWalletId, null, validAmount, validCurrency));
+                Transaction.createTransfer(sourceWalletId, null, validAmount));
     }
 
     @Test
     @DisplayName("createDeposit should throw when source is null")
     void createDeposit_shouldThrowWhenSourceIsNull() {
         assertThrows(NullPointerException.class, () ->
-                        Transaction.createDeposit(null, validAmount, validCurrency),
+                        Transaction.createDeposit(null, validAmount),
                 "Source wallet cannot be null");
     }
 
@@ -111,7 +104,7 @@ class TransactionTest {
     @DisplayName("createWithdraw should throw when source is null")
     void createWithdraw_shouldThrowWhenSourceIsNull() {
         assertThrows(NullPointerException.class, () ->
-                        Transaction.createWithdraw(null, validAmount, validCurrency),
+                        Transaction.createWithdraw(null, validAmount),
                 "Source wallet cannot be null");
     }
 
@@ -122,7 +115,7 @@ class TransactionTest {
         BigDecimal amount = new BigDecimal(invalidAmount);
 
         assertThrows(RuntimeException.class, () ->
-                        Transaction.createDeposit(sourceWalletId, amount, validCurrency),
+                        Transaction.createDeposit(sourceWalletId, amount),
                 "Amount must be positive");
     }
 
@@ -133,24 +126,15 @@ class TransactionTest {
         BigDecimal amount = new BigDecimal(invalidAmount);
 
         assertThrows(RuntimeException.class, () ->
-                        Transaction.createDeposit(sourceWalletId, amount, validCurrency),
+                        Transaction.createDeposit(sourceWalletId, amount),
                 "Amount cannot have more than 2 decimal places");
-    }
-
-    @ParameterizedTest
-    @NullSource
-    @DisplayName("should reject null currency")
-    void shouldRejectNullCurrency(String nullCurrency) {
-        assertThrows(NullPointerException.class, () ->
-                        Transaction.createDeposit(sourceWalletId, validAmount, null),
-                "Currency cannot be null");
     }
 
     @Test
     @DisplayName("should generate unique IDs for each transaction")
     void shouldGenerateUniqueIds() {
-        Transaction t1 = Transaction.createDeposit(sourceWalletId, validAmount, validCurrency);
-        Transaction t2 = Transaction.createDeposit(sourceWalletId, validAmount, validCurrency);
+        Transaction t1 = Transaction.createDeposit(sourceWalletId, validAmount);
+        Transaction t2 = Transaction.createDeposit(sourceWalletId, validAmount);
 
         assertNotEquals(t1.getId(), t2.getId());
     }
@@ -159,7 +143,7 @@ class TransactionTest {
     @DisplayName("should set current timestamp on creation")
     void shouldSetCurrentTimestamp() {
         LocalDateTime before = LocalDateTime.now();
-        Transaction transaction = Transaction.createDeposit(sourceWalletId, validAmount, validCurrency);
+        Transaction transaction = Transaction.createDeposit(sourceWalletId, validAmount);
         LocalDateTime after = LocalDateTime.now();
 
         assertTrue(transaction.getTimestamp().isAfter(before) ||
@@ -174,8 +158,7 @@ class TransactionTest {
         Transaction transfer = Transaction.createTransfer(
                 sourceWalletId,
                 destinationWalletId,
-                validAmount,
-                validCurrency);
+                validAmount);
 
         assertNotNull(transfer.getDestinationWalletId());
     }
@@ -185,8 +168,7 @@ class TransactionTest {
     void depositShouldNotHaveDestination() {
         Transaction deposit = Transaction.createDeposit(
                 sourceWalletId,
-                validAmount,
-                validCurrency);
+                validAmount);
 
         assertNull(deposit.getDestinationWalletId());
     }
@@ -196,8 +178,7 @@ class TransactionTest {
     void withdrawShouldNotHaveDestination() {
         Transaction withdraw = Transaction.createWithdraw(
                 sourceWalletId,
-                validAmount,
-                validCurrency);
+                validAmount);
 
         assertNull(withdraw.getDestinationWalletId());
     }
@@ -219,8 +200,7 @@ class TransactionTest {
         BigDecimal amount = new BigDecimal(validAmount);
         Transaction transaction = Transaction.createDeposit(
                 sourceWalletId,
-                amount,
-                validCurrency);
+                amount);
 
         assertEquals(amount, transaction.getAmount());
     }

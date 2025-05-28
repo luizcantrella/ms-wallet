@@ -27,7 +27,7 @@ public class WithdrawUseCaseImpl implements WithdrawUseCase {
                 .orElseThrow(()-> new RuntimeException("WalletNotFound"));
         wallet.withdraw(command.amount());
 
-        Transaction transaction = Transaction.createWithdraw(wallet.getId(),command.amount(), "BLR");
+        Transaction transaction = Transaction.createWithdraw(wallet.getId(),command.amount());
 
         walletRepositoryPort.update(wallet);
         cachePort.evict(command.userId());

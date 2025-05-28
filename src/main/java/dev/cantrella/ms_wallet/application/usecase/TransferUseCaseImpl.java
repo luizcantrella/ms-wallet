@@ -35,8 +35,7 @@ public class TransferUseCaseImpl implements TransferUseCase {
         Transaction transaction = Transaction.createTransfer(
                 command.sourceWalletId(),
                 command.destinationWalletId(),
-                command.amount(),
-                "BLR");
+                command.amount());
 
         walletRepositoryPort.update(sourceWallet);
         walletRepositoryPort.update(destinationWallet);

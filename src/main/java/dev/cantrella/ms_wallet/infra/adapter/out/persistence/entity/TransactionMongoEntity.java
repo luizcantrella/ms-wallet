@@ -27,8 +27,6 @@ public class TransactionMongoEntity {
     private String type;
     @Field("amount")
     private BigDecimal amount;
-    @Field("currency")
-    private String currency;
     @Field("timestamp")
     private Long timestamp;
 

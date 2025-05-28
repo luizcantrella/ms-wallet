@@ -32,9 +32,6 @@ public class TransactionEntity {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column(nullable = false, length = 3)
-    private String currency;
-
-    @Column(nullable = false, columnDefinition = "TIMESTAMP(0) WITHOUT TIME ZONE")
+    @Column(nullable = false, columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
     private LocalDateTime timestamp;
 }

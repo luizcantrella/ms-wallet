@@ -17,20 +17,17 @@ public class Transaction {
     private UUID destinationWalletId;
     private TransactionType type;
     private BigDecimal amount;
-    private String currency;
     private LocalDateTime timestamp;
 
     private Transaction (
             UUID sourceWalletId,
             UUID destinationWalletId,
             TransactionType type,
-            BigDecimal amount,
-            String currency) {
+            BigDecimal amount) {
         this.id = UUID.randomUUID();
         this.sourceWalletId = Objects.requireNonNull(sourceWalletId, "Source wallet cannot be null");
         this.type = Objects.requireNonNull(type, "Transaction type cannot be null");
         this.amount = validateAmount(amount);
-        this.currency = Objects.requireNonNull(currency, "Currency cannot be null");
         this.destinationWalletId = destinationWalletId;
         this.timestamp = LocalDateTime.now();
     }
@@ -41,13 +38,11 @@ public class Transaction {
             UUID destinationWalletId,
             TransactionType type,
             BigDecimal amount,
-            String currency,
             LocalDateTime timestamp) {
         this.id = id;
         this.sourceWalletId = sourceWalletId;
         this.type = type;
         this.amount = amount;
-        this.currency = currency;
         this.destinationWalletId = destinationWalletId;
         this.timestamp = timestamp;
     }
@@ -58,26 +53,24 @@ public class Transaction {
             UUID destinationWalletId,
             TransactionType type,
             BigDecimal amount,
-            String currency,
             LocalDateTime timestamp) {
-        return new Transaction(id, sourceWalletId, destinationWalletId, type, amount, currency, timestamp);
+        return new Transaction(id, sourceWalletId, destinationWalletId, type, amount, timestamp);
     }
 
-    public static Transaction createTransfer(UUID source, UUID destination, BigDecimal amount, String currency) {
+    public static Transaction createTransfer(UUID source, UUID destination, BigDecimal amount) {
         return new Transaction(
                 source,
                 Objects.requireNonNull(destination, "Source wallet cannot be null"),
                 TransactionType.TRANSFER,
-                amount,
-                currency);
+                amount);
     }
 
-    public static Transaction createDeposit(UUID source, BigDecimal amount, String currency) {
-        return new Transaction(source, null, TransactionType.DEPOSIT, amount, currency);
+    public static Transaction createDeposit(UUID source, BigDecimal amount) {
+        return new Transaction(source, null, TransactionType.DEPOSIT, amount);
     }
 
-    public static Transaction createWithdraw(UUID source, BigDecimal amount, String currency) {
-        return new Transaction(source, null, TransactionType.WITHDRAW, amount, currency);
+    public static Transaction createWithdraw(UUID source, BigDecimal amount) {
+        return new Transaction(source, null, TransactionType.WITHDRAW, amount);
     }
 
     private BigDecimal validateAmount(BigDecimal amount) {

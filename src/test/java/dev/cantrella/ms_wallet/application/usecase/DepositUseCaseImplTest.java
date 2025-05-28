@@ -49,7 +49,6 @@ class DepositUseCaseImplTest {
                 null,
                 TransactionType.DEPOSIT,
                 new BigDecimal("20.00"),
-                "BRL",
                 LocalDateTime.now());
     }
 
@@ -62,7 +61,7 @@ class DepositUseCaseImplTest {
         Wallet wallet = new Wallet(UUID.randomUUID(), userEmail, BigDecimal.ZERO, LocalDateTime.now());
         when(walletRepositoryPort.findByUserIdForUpdate(userEmail)).thenReturn(Optional.of(wallet));
         when(transactionRepositoryPort.save(any())).thenReturn(transaction);
-        Transaction expectedTransaction = Transaction.createDeposit(wallet.getId(), amount, "BLR");
+        Transaction expectedTransaction = Transaction.createDeposit(wallet.getId(), amount);
 
         Transaction result = depositUseCase.execute(command);
 
@@ -129,7 +128,7 @@ class DepositUseCaseImplTest {
         BigDecimal amount = new BigDecimal("75.25");
         DepositOrWithdrawCommand command = new DepositOrWithdrawCommand(userEmail, amount);
         Wallet wallet = new Wallet(UUID.randomUUID(), userEmail, BigDecimal.ZERO, LocalDateTime.now());
-        Transaction depositTransaction = Transaction.createDeposit(wallet.getId(), amount, "BRL");
+        Transaction depositTransaction = Transaction.createDeposit(wallet.getId(), amount);
         when(walletRepositoryPort.findByUserIdForUpdate(userEmail)).thenReturn(Optional.of(wallet));
         when(transactionRepositoryPort.save(any())).thenReturn(depositTransaction);
 
@@ -139,7 +138,6 @@ class DepositUseCaseImplTest {
         assertNotNull(result);
         assertEquals(wallet.getId(), result.getSourceWalletId());
         assertEquals(amount, result.getAmount());
-        assertEquals("BRL", result.getCurrency());
         assertEquals(TransactionType.DEPOSIT, result.getType());
         assertNull(result.getDestinationWalletId());
     }
@@ -172,7 +170,7 @@ class DepositUseCaseImplTest {
         Wallet wallet = new Wallet(UUID.randomUUID(), userEmail, BigDecimal.ZERO, LocalDateTime.now());
         when(walletRepositoryPort.findByUserIdForUpdate(userEmail)).thenReturn(Optional.of(wallet));
 
-        Transaction expectedTransaction = Transaction.createDeposit(wallet.getId(), amount, "BLR");
+        Transaction expectedTransaction = Transaction.createDeposit(wallet.getId(), amount);
         when(transactionRepositoryPort.save(any())).thenReturn(expectedTransaction);
 
         Transaction result = depositUseCase.execute(command);

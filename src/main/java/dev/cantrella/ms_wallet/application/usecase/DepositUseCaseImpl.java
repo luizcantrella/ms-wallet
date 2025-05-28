@@ -27,7 +27,7 @@ public class DepositUseCaseImpl implements DepositUseCase {
                 .orElseThrow(()-> new RuntimeException("WalletNotFound"));
         wallet.deposit(command.amount());
 
-        Transaction transaction = Transaction.createDeposit(wallet.getId(),command.amount(), "BLR");
+        Transaction transaction = Transaction.createDeposit(wallet.getId(),command.amount());
 
         walletRepositoryPort.update(wallet);
         cachePort.evict(command.userId());

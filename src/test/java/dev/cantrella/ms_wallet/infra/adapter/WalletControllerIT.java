@@ -212,7 +212,6 @@ class WalletControllerIT {
                 .destinationWalletId(null)
                 .type(TransactionType.DEPOSIT.toString())
                 .amount(new BigDecimal("200.00"))
-                .currency("BRL")
                 .timestamp(LocalDateTime.now().atZone(ZoneOffset.UTC).toInstant().getEpochSecond() * 1000)
                 .build());
 
@@ -227,7 +226,6 @@ class WalletControllerIT {
                         .destinationWalletId(null)
                         .type(TransactionType.DEPOSIT.toString())
                         .amount(new BigDecimal("200.00"))
-                        .currency("BRL")
                         .timestamp(LocalDateTime.now().atZone(ZoneOffset.UTC).toInstant().getEpochSecond() * 1000)
                         .build());
         var secondTime = LocalDateTime.now().format(formatter);

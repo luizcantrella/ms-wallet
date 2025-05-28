@@ -74,6 +74,11 @@ services:
     depends_on:
       - zookeeper
       - kafka
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8083" ]
+      interval: 30s
+      timeout: 20s
+      retries: 10
     ports:
       - 8083:8083
     environment:
@@ -95,6 +100,8 @@ services:
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
       CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components,/data/connect-jars
+    volumes:
+      - ./connectors:/etc/kafka-connect/connectors
     command:
       - bash
       - -c
@@ -105,8 +112,8 @@ services:
         #
         echo "Launching Kafka Connect worker"
         /etc/confluent/docker/run &
-        #
-        sleep infinity
+        /etc/kafka-connect/connectors/setup-connectors.sh
+        wait
     logging: *default-logging
     extra_hosts:
       - "host.docker.internal:172.17.0.1"

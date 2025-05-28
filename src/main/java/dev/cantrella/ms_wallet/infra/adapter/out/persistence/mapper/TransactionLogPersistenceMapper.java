@@ -21,13 +21,12 @@ public class TransactionLogPersistenceMapper {
                 entity.getDestinationWalletId() != null ? UUID.fromString(entity.getDestinationWalletId()) : null,
                 TransactionType.valueOf(entity.getType()),
                 entity.getAmount(),
-                entity.getCurrency(),
                 Instant.ofEpochMilli(entity.getTimestamp())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime()
                 );
     }
-
+//TODO: remove this comments
 //    private UUID convert(String source) {
 //        if (source != null && !source.contains("-")) {
 //            source = source.replaceFirst(

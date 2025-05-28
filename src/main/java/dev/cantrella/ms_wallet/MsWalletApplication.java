@@ -9,7 +9,7 @@ import java.util.TimeZone;
 public class MsWalletApplication {
 
 	public static void main(String[] args) {
-		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+		TimeZone.setDefault(TimeZone.getTimeZone("America/Sao_Paulo"));
 		SpringApplication.run(MsWalletApplication.class, args);
 	}
 

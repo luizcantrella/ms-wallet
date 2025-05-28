@@ -53,8 +53,8 @@ class ConsultBalanceHistoryUseCaseTest {
         when(walletRepositoryPort.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
 
         List<Transaction> transactions = Arrays.asList(
-                Transaction.createDeposit(wallet.getId(), new BigDecimal("100.00"), "BRL"),
-                Transaction.createWithdraw(wallet.getId(), new BigDecimal("50.00"), "BRL")
+                Transaction.createDeposit(wallet.getId(), new BigDecimal("100.00")),
+                Transaction.createWithdraw(wallet.getId(), new BigDecimal("50.00"))
         );
 
         when(transactionLogRepositoryPort.listByWalletId(eq(wallet.getId()), any()))
@@ -77,12 +77,11 @@ class ConsultBalanceHistoryUseCaseTest {
         when(walletRepositoryPort.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
 
         List<Transaction> transactions = Arrays.asList(
-                Transaction.createDeposit(wallet.getId(), new BigDecimal("100.00"), "BRL"),
+                Transaction.createDeposit(wallet.getId(), new BigDecimal("100.00")),
                 Transaction.createTransfer(
                         wallet.getId(),
                         UUID.randomUUID(),
-                        new BigDecimal("30.00"),
-                        "BRL")
+                        new BigDecimal("30.00"))
         );
 
         when(transactionLogRepositoryPort.listByWalletId(eq(wallet.getId()), any()))
@@ -101,7 +100,7 @@ class ConsultBalanceHistoryUseCaseTest {
         BalanceHistoryQuery query = new BalanceHistoryQuery(USER_ID, LocalDateTime.now());
         when(walletRepositoryPort.findByUserId(USER_ID)).thenReturn(Optional.of(wallet));
         List<Transaction> transactions = Arrays.asList(
-                Transaction.createTransfer(UUID.randomUUID(), wallet.getId(), new BigDecimal("40.00"), "BRL")
+                Transaction.createTransfer(UUID.randomUUID(), wallet.getId(), new BigDecimal("40.00"))
         );
         when(transactionLogRepositoryPort.listByWalletId(eq(wallet.getId()), any()))
                 .thenReturn(transactions);

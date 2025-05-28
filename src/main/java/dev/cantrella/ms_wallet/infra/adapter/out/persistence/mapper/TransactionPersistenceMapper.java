@@ -16,7 +16,6 @@ public class TransactionPersistenceMapper {
                 .destinationWalletId(transaction.getDestinationWalletId())
                 .type(transaction.getType())
                 .amount(transaction.getAmount())
-                .currency(transaction.getCurrency())
                 .timestamp(transaction.getTimestamp())
                 .build();
     }
@@ -31,7 +30,6 @@ public class TransactionPersistenceMapper {
                 entity.getDestinationWalletId(),
                 entity.getType(),
                 entity.getAmount(),
-                entity.getCurrency(),
                 entity.getTimestamp());
     }
 }

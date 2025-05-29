@@ -119,7 +119,237 @@
 			"response": []
 		},
 		{
-			"name": "Create Wallet 2",
+			"name": "Get Wallet ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var response_data = pm.response.json();\r",
+							"console.log(response_data);\r",
+							"pm.environment.set(\"wallet_id\", response_data.id);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "password",
+							"value": "123456",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{user_name1}}",
+							"type": "string"
+						},
+						{
+							"key": "clientSecret",
+							"value": "{{client_secret}}",
+							"type": "string"
+						},
+						{
+							"key": "clientId",
+							"value": "{{client_id}}",
+							"type": "string"
+						},
+						{
+							"key": "grant_type",
+							"value": "password_credentials",
+							"type": "string"
+						},
+						{
+							"key": "accessTokenUrl",
+							"value": "http://localhost:8084/realms/wallet_realm/protocol/openid-connect/token",
+							"type": "string"
+						},
+						{
+							"key": "authUrl",
+							"value": "http://localhost:8084/realms/wallet_realm/protocol/openid-connect/auth",
+							"type": "string"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "https://oauth.pstmn.io/v1/callback",
+							"type": "string"
+						},
+						{
+							"key": "useBrowser",
+							"value": false,
+							"type": "boolean"
+						},
+						{
+							"key": "scope",
+							"value": "openid",
+							"type": "string"
+						},
+						{
+							"key": "client_authentication",
+							"value": "header",
+							"type": "string"
+						},
+						{
+							"key": "tokenName",
+							"value": "wallet_token",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/wallets",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Wallet ID user 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var response_data = pm.response.json();\r",
+							"console.log(response_data);\r",
+							"pm.environment.set(\"wallet_id2\", response_data.id);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "password",
+							"value": "258369",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "kirk",
+							"type": "string"
+						},
+						{
+							"key": "clientSecret",
+							"value": "{{client_secret}}",
+							"type": "string"
+						},
+						{
+							"key": "clientId",
+							"value": "{{client_id}}",
+							"type": "string"
+						},
+						{
+							"key": "grant_type",
+							"value": "password_credentials",
+							"type": "string"
+						},
+						{
+							"key": "accessTokenUrl",
+							"value": "http://localhost:8084/realms/wallet_realm/protocol/openid-connect/token",
+							"type": "string"
+						},
+						{
+							"key": "authUrl",
+							"value": "http://localhost:8084/realms/wallet_realm/protocol/openid-connect/auth",
+							"type": "string"
+						},
+						{
+							"key": "redirect_uri",
+							"value": "https://oauth.pstmn.io/v1/callback",
+							"type": "string"
+						},
+						{
+							"key": "useBrowser",
+							"value": false,
+							"type": "boolean"
+						},
+						{
+							"key": "scope",
+							"value": "openid",
+							"type": "string"
+						},
+						{
+							"key": "client_authentication",
+							"value": "header",
+							"type": "string"
+						},
+						{
+							"key": "tokenName",
+							"value": "wallet_token",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/wallets",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Wallet user 2",
 			"event": [
 				{
 					"listen": "test",
@@ -505,7 +735,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"sourceWalletId\": \"{{wallet_id}}\",\r\n  \"destinationWalletId\": \"{{wallet_id2}}\",\r\n  \"amount\": 50.00\r\n}",
+					"raw": "{\r\n  \"sourceWalletId\": \"{{wallet_id}}\",\r\n  \"destinationWalletId\": \"{{wallet_id2}}\",\r\n  \"amount\": 500.00\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -692,7 +922,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/wallets/balance?at=2025-05-28T11:54:57",
+					"raw": "http://localhost:8080/wallets/balance?at=2025-05-28T21:03:50",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -705,7 +935,7 @@
 					"query": [
 						{
 							"key": "at",
-							"value": "2025-05-28T11:54:57"
+							"value": "2025-05-28T21:03:50"
 						}
 					]
 				}
@@ -713,7 +943,7 @@
 			"response": []
 		},
 		{
-			"name": "Consult Balance 2",
+			"name": "Consult Balance user 2",
 			"request": {
 				"auth": {
 					"type": "oauth2",

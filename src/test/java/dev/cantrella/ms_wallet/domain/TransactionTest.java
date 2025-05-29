@@ -1,4 +1,4 @@
-package dev.cantrella.ms_wallet.core.domain;
+package dev.cantrella.ms_wallet.domain;
 
 import dev.cantrella.ms_wallet.domain.exception.InvalidAmountTransactionException;
 import dev.cantrella.ms_wallet.domain.exception.NonNullValueException;

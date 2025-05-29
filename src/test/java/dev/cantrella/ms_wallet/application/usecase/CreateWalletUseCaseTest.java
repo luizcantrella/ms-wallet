@@ -56,7 +56,7 @@ class CreateWalletUseCaseTest {
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> createWalletUseCase.execute(userId));
 
-        assertEquals("Wallet already exists for this user", exception.getMessage());
+        assertEquals("Wallet already exists", exception.getMessage());
         verify(walletRepositoryPort, times(1)).existsByUserId(userId);
         verify(walletRepositoryPort, never()).save(any());
     }

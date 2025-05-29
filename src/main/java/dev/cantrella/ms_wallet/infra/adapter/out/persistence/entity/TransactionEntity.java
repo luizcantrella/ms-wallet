@@ -4,6 +4,7 @@ import dev.cantrella.ms_wallet.domain.model.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -32,6 +33,6 @@ public class TransactionEntity {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column(nullable = false, columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
+    @Column(nullable = false, columnDefinition = "TIMESTAMP(0) WITHOUT TIME ZONE")
     private LocalDateTime timestamp;
 }
